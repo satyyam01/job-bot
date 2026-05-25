@@ -12,10 +12,10 @@ export interface OptimizationMetadata {
   optimized: string;
   ats_gain_score: number;
   semantic_similarity_score: number;
-  layout_drift_score: number;
   authenticity_score: number;
   domain_compatibility_score: number;
-  technical_density_score: number;
+  engineering_tone_score: number;
+  conciseness_score: number;
   optimization_confidence_score: number;
   retry_count: number;
   final_decision: "pending" | "optimized" | "preserved" | "rejected";
@@ -81,10 +81,10 @@ async function relevanceRankerNode(state: State) {
       optimized: b.originalText,
       ats_gain_score: 0,
       semantic_similarity_score: 1.0,
-      layout_drift_score: 0,
       authenticity_score: 1.0,
       domain_compatibility_score: 1.0,
-      technical_density_score: 1.0,
+      engineering_tone_score: 1.0,
+      conciseness_score: 1.0,
       optimization_confidence_score: 0,
       retry_count: 0,
       final_decision: "pending"
@@ -95,7 +95,7 @@ async function relevanceRankerNode(state: State) {
 }
 
 async function bulletOptimizerNode(state: State) {
-  logger.info('[Graph] Bullet Optimizer Node (Domain-Aware Generative Drafts)');
+  logger.info('[Graph] Bullet Optimizer Node (Elite Engineer Tone Calibration)');
   
   const updatedMetadata = { ...state.metadata };
 
@@ -112,17 +112,18 @@ async function bulletOptimizerNode(state: State) {
         }
 
         const prompt = `
-        You are a Domain-Authentic Semantic Optimizer. 
+        You are an Elite Senior Engineer optimizing a resume bullet. 
         Original Bullet: ${bullet.originalText}
         JD Semantic Targets: ${state.jdEmphasis.join(', ')}
         
         CRITICAL RULES:
-        1. Keep it within 10-15% of original word count.
-        2. Insert highly authentic SWE keywords IF AND ONLY IF they fit perfectly.
-        3. Make NO CHANGE if original is strong.
-        4. NEVER append generic HR fluff.
-        5. DO NOT INJECT domain-specific targets (e.g. AML, anti-corruption) into incompatible domains (e.g. object detection, IoT). Semantic contamination will be heavily penalized.
-        6. ENGINEERING TONE: Never explicitly inject generic soft skills (communication, time management, problem-solving, teamwork, collaboration, analytical skills). Demonstrate them implicitly through technical outcomes instead (e.g. use "cross-functional workflow automation" instead of "effective communication").
+        1. ELITE ENGINEER TONE: Be incredibly concise, compact, and high-signal. Do NOT over-explain. 
+        2. MINIMAL DELTA: Aim for a tiny, high-value technical improvement. Change as little as possible.
+        3. NO FILLER VERBS: Never use words like "leveraging", "utilizing", "showcasing", "facilitating". 
+        4. VERB DIVERSITY: Use DIVERSE strong engineering verbs (Architected, Developed, Implemented, Designed, Optimized, Integrated, Secured, Deployed). DO NOT repeatedly spam "Built".
+        5. NATURAL PHRASING: Do not forcibly alter the original verb or syntax if the original phrasing is already strong and natural (e.g., keep 'Implemented OTP' instead of forcing 'Designed secure OTP').
+        6. NO FLUFF: Never explicitly inject generic soft skills (communication, time management, problem-solving, teamwork, collaboration, analytical skills). 
+        7. STRICT DOMAIN BOUNDARIES: Do NOT inject JD targets verbatim (like 'consumer protection', 'fairness') into unrelated projects (like livestock platforms or object detection). Translate them into their native engineering equivalents (e.g., 'operational visibility', 'system reliability') or make NO CHANGE. Semantic leakage will be heavily penalized.
         
         Return ONLY a JSON object: { "optimizedText": "your text here" }
         `;
@@ -150,7 +151,7 @@ async function bulletOptimizerNode(state: State) {
 }
 
 async function computeScoresNode(state: State) {
-  logger.info('[Graph] Compute Scores Node (Cohere & Domain Plausibility Validation)');
+  logger.info('[Graph] Compute Scores Node (Engineering Tone & Conciseness Validation)');
   
   const metadata = { ...state.metadata };
   
@@ -180,6 +181,9 @@ async function computeScoresNode(state: State) {
       const id = bulletIds[i];
       const meta = metadata[id];
       
+      const optStr = meta.optimized.toLowerCase();
+      const origStr = meta.original.toLowerCase();
+
       // 1. Semantic Preservation
       const similarity = CohereService.cosineSimilarity(origEmbeds[i], optEmbeds[i]);
       meta.semantic_similarity_score = similarity;
@@ -190,27 +194,44 @@ async function computeScoresNode(state: State) {
       const rawGain = Math.max(0, optToJD - origToJD);
       meta.ats_gain_score = Math.min(rawGain * 5, 1.0); 
 
-      // 3. Layout Drift Score
-      const origWords = meta.original.split(/\\s+/).length;
-      const newWords = meta.optimized.split(/\\s+/).length;
-      const diffRatio = Math.abs(newWords - origWords) / origWords;
-      meta.layout_drift_score = diffRatio > 0.15 ? -0.5 : 1.0; 
-
-      // 4. Authenticity Score (Heuristic Fluff Check)
-      const banned = ['compliance', 'regulatory', 'stakeholder', 'quality assurance', 'customer satisfaction', 'communication', 'time management', 'problem-solving', 'analytical skills', 'leadership', 'teamwork', 'collaboration'];
+      // 3. Authenticity Score (Heuristic Fluff Check)
+      const bannedAuth = ['compliance', 'regulatory', 'stakeholder', 'quality assurance', 'customer satisfaction', 'communication', 'time management', 'problem-solving', 'analytical skills', 'leadership', 'teamwork', 'collaboration'];
       let authScore = 1.0;
-      for (const b of banned) {
-        if (meta.optimized.toLowerCase().includes(b) && !meta.original.toLowerCase().includes(b)) {
+      for (const b of bannedAuth) {
+        if (optStr.includes(b) && !origStr.includes(b)) {
           authScore -= 0.5;
         }
       }
-      meta.authenticity_score = authScore;
+      meta.authenticity_score = Math.max(0, authScore);
+
+      // 4. Conciseness Score
+      const bannedVerbose = ['leveraging', 'utilizing', 'showcasing expertise', 'strategic implementation', 'enhanced capabilities for', 'ensuring robust', 'facilitating', 'demonstrating'];
+      let concisenessScore = 1.0;
+      for (const b of bannedVerbose) {
+         if (optStr.includes(b) && !origStr.includes(b)) {
+           concisenessScore -= 0.3; // Penalty for narrative bloat
+         }
+      }
       
-      // 5. Technical Density Score (Heuristic)
-      const techWordsRegex = /[A-Z][a-zA-Z0-9]*|api|sql|db|ui|ux|backend|frontend/g;
-      const origTechWords = (meta.original.match(techWordsRegex) || []).length;
-      const optTechWords = (meta.optimized.match(techWordsRegex) || []).length;
-      meta.technical_density_score = optTechWords >= origTechWords ? 1.0 : 0.5;
+      // Word count footprint penalty (don't expand sentences significantly)
+      const origWords = meta.original.split(/\\s+/).length;
+      const optWords = meta.optimized.split(/\\s+/).length;
+      if (optWords > origWords + 12) {
+        concisenessScore -= 0.5; // Heavy penalty for extreme verbose elaboration
+      }
+      meta.conciseness_score = Math.max(0, concisenessScore);
+
+      // 5. Engineering Tone Score (Bullet Sharpness)
+      const strongVerbs = ['built', 'designed', 'developed', 'architected', 'implemented', 'optimized', 'deployed', 'automated', 'integrated', 'secured'];
+      let toneScore = 1.0;
+      let hasStrongVerb = false;
+      for (const v of strongVerbs) {
+         if (optStr.includes(v)) hasStrongVerb = true;
+      }
+      if (!hasStrongVerb) {
+         toneScore -= 0.1; // Slight bump if it lacks strong systems verbs
+      }
+      meta.engineering_tone_score = Math.max(0, toneScore);
 
       // 6. Claim Plausibility / Domain Compatibility (LLM Validation)
       if (meta.original !== meta.optimized) {
@@ -226,26 +247,26 @@ async function computeScoresNode(state: State) {
            Return ONLY a JSON object:
            {
              "is_plausible": boolean,
-             "domain_compatibility_score": number // 0.0 to 1.0. 1.0 means perfectly natural, 0.0 means suspicious fake keyword stuffing.
+             "domain_compatibility_score": number
            }
            `;
            const validationRes = await InferenceService.generateStructuredData(plausibilityPrompt);
            meta.domain_compatibility_score = validationRes.domain_compatibility_score ?? 1.0;
          } catch (e) {
-           meta.domain_compatibility_score = 1.0; // Fallback if LLM fails
+           meta.domain_compatibility_score = 1.0; 
          }
       } else {
          meta.domain_compatibility_score = 1.0;
       }
 
-      // 7. Final Rebalanced Optimization Confidence
+      // 7. Final Rebalanced Optimization Confidence (Per Elite Engineer Specs)
       meta.optimization_confidence_score = 
-        (meta.ats_gain_score * 0.20) + 
         (meta.semantic_similarity_score * 0.25) + 
         (meta.authenticity_score * 0.25) + 
         (meta.domain_compatibility_score * 0.20) + 
-        (meta.technical_density_score * 0.05) + 
-        (meta.layout_drift_score * 0.05);
+        (meta.engineering_tone_score * 0.15) + 
+        (meta.conciseness_score * 0.10) + 
+        (meta.ats_gain_score * 0.05);
     }
   }
 
@@ -253,7 +274,7 @@ async function computeScoresNode(state: State) {
 }
 
 async function decisionNode(state: State) {
-  logger.info('[Graph] Decision Node (Domain-Authentic Threshold Finalizer)');
+  logger.info('[Graph] Decision Node (Elite Engineer Threshold Finalizer)');
   
   const metadata = { ...state.metadata };
   let allDone = true;
@@ -269,17 +290,19 @@ async function decisionNode(state: State) {
           continue;
         }
 
-        // Calibrated Domain Thresholds
+        // Calibrated Elite Domain Thresholds
         if (meta.domain_compatibility_score < 0.8) {
-          meta.final_decision = "rejected"; // Domain invalid keyword insertion
-        } else if (meta.semantic_similarity_score < 0.82) {
-          meta.final_decision = "rejected";
+          meta.final_decision = "rejected"; 
+        } else if (meta.semantic_similarity_score < 0.85) {
+          meta.final_decision = "rejected"; // Require high semantic anchoring
         } else if (meta.authenticity_score < 0.8) {
           meta.final_decision = "rejected";
-        } else if (meta.layout_drift_score < 0) {
+        } else if (meta.conciseness_score < 0.7) {
+          meta.final_decision = "rejected"; // Reject inflated wording
+        } else if (meta.engineering_tone_score < 0.8) {
           meta.final_decision = "rejected";
-        } else if (meta.ats_gain_score <= 0 && meta.semantic_similarity_score < 0.95) {
-          meta.final_decision = "rejected";
+        } else if (meta.ats_gain_score <= 0 && meta.semantic_similarity_score < 0.98) {
+          meta.final_decision = "rejected"; // If no ATS gain, reject nearly all changes
         } else {
           meta.final_decision = "optimized";
         }
@@ -304,7 +327,7 @@ async function decisionNode(state: State) {
   if (allDone) {
     for (const meta of Object.values(metadata)) {
       if (meta.original !== meta.optimized || meta.retry_count > 0) {
-         logger.info(`[Scoring] Bullet ${meta.bullet_id} -> ${meta.final_decision} (Conf: ${meta.optimization_confidence_score.toFixed(2)}, ATS: ${meta.ats_gain_score.toFixed(2)}, Domain: ${meta.domain_compatibility_score.toFixed(2)})`);
+         logger.info(`[Scoring] Bullet ${meta.bullet_id} -> ${meta.final_decision} (Conf: ${meta.optimization_confidence_score.toFixed(2)}, ATS: ${meta.ats_gain_score.toFixed(2)}, Concise: ${meta.conciseness_score.toFixed(2)})`);
       }
     }
   }

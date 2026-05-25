@@ -4,14 +4,16 @@ export class ResumeRenderer {
   /**
    * Normalizes spacing, replaces literal escaped newlines, and ensures clean rendering format.
    */
-  private static normalizeText(text: string): string {
+  private static normalizeText(text: string, isBullet = false): string {
     if (!text) return '';
-    // Replace any accidental double-escaped newlines with actual newlines
     let normalized = text.replace(/\\\\n/g, '\n');
     normalized = normalized.replace(/\\n/g, '\n');
-    // Ensure bullets have a clean space after them
+    normalized = normalized.trim();
+    if (isBullet && !normalized.startsWith('•')) {
+       normalized = '• ' + normalized;
+    }
     normalized = normalized.replace(/^•([^\s])/gm, '• $1');
-    return normalized.trim();
+    return normalized;
   }
 
   /**
@@ -26,24 +28,24 @@ export class ResumeRenderer {
 
     // Experience Section
     lines.push('Experience');
-    lines.push(''); // Add spacing
+    lines.push(''); 
     for (const proj of experience) {
-      lines.push(...proj.titleAndTech.map(this.normalizeText));
+      lines.push(...proj.titleAndTech.map(t => this.normalizeText(t)));
       for (const bullet of proj.bullets) {
-        lines.push(this.normalizeText(bullet.optimizedText));
+        lines.push(this.normalizeText(bullet.optimizedText, true));
       }
-      lines.push(''); // Space between experiences
+      lines.push(''); 
     }
 
     // Projects Section
     lines.push('Projects');
-    lines.push(''); // Add spacing
+    lines.push(''); 
     for (const proj of projects) {
-      lines.push(...proj.titleAndTech.map(this.normalizeText));
+      lines.push(...proj.titleAndTech.map(t => this.normalizeText(t)));
       for (const bullet of proj.bullets) {
-        lines.push(this.normalizeText(bullet.optimizedText));
+        lines.push(this.normalizeText(bullet.optimizedText, true));
       }
-      lines.push(''); // Space between projects
+      lines.push(''); 
     }
 
     // Technical Skills Section
