@@ -1,0 +1,85 @@
+# Node dependencies
+node_modules/
+
+# Production build output
+dist/
+build/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE / editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Debug files
+*.pid
+*.seed
+
+# Misc
+coverage/
+.nyc_output/
+.cache/
+
+# Temporary files
+tmp/
+temp/
+
+# Build artifacts
+*.tgz
+
+# Optional npm cache directory
+.npm
+
+# Parcel cache
+.cache/
+
+# Mac-specific
+.AppleDouble
+.LSOverride
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# VS Code settings
+.history/
+
+# Local environment and personal files
+*.local
+
+# Firecrawl / custom generated files
+firecrawl/*.json
+
+# Generated resume outputs
+src/resume/*.json
+src/resume/*.md
+
+# Ignore Git metadata for submodules if any
+.gitmodules
+
+# Ignore package lock if you prefer yarn or pnpm (optional)
+# package-lock.json
