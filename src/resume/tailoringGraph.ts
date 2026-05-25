@@ -103,8 +103,14 @@ async function bulletOptimizerNode(state: State) {
     const updated = [];
     for (const proj of projects) {
       const updatedBullets = [];
+      const allBulletsContext = proj.bullets.map((b, i) => `${i + 1}. "${b.originalText}"`).join('\n');
+      
       for (const bullet of proj.bullets) {
         const meta = updatedMetadata[bullet.id];
+        if (!meta) {
+           updatedBullets.push(bullet);
+           continue;
+        }
         
         if (meta.final_decision !== "pending") {
            updatedBullets.push(bullet);
@@ -113,15 +119,23 @@ async function bulletOptimizerNode(state: State) {
 
         const prompt = `
         You are an Elite Senior Engineer optimizing a resume bullet. 
-        Original Bullet: ${bullet.originalText}
+        We are optimizing bullet points within the project/experience: "${proj.titleAndTech.join(' | ')}".
+        
+        All original bullets in this section/project:
+        ${allBulletsContext}
+        
+        Currently optimizing Bullet: "${bullet.originalText}"
         JD Semantic Targets: ${state.jdEmphasis.join(', ')}
         
         CRITICAL RULES:
         1. ELITE ENGINEER TONE: Be incredibly concise, compact, and high-signal. Do NOT over-explain. 
         2. MINIMAL DELTA: Aim for a tiny, high-value technical improvement. Change as little as possible.
         3. NO FILLER VERBS: Never use words like "leveraging", "utilizing", "showcasing", "facilitating". 
-        4. VERB DIVERSITY: Use DIVERSE strong engineering verbs (Architected, Developed, Implemented, Designed, Optimized, Integrated, Secured, Deployed). DO NOT repeatedly spam "Built".
-        5. NATURAL PHRASING: Do not forcibly alter the original verb or syntax if the original phrasing is already strong and natural (e.g., keep 'Implemented OTP' instead of forcing 'Designed secure OTP').
+        4. VERB DIVERSITY & NO REPETITION: Use DIVERSE strong engineering verbs (Architected, Developed, Implemented, Designed, Optimized, Integrated, Secured, Deployed). 
+           NEVER repeat the same starting action word across different bullets in the same project/experience section. Maintain rhythm and diversity. E.g., do NOT start multiple bullets with "Designed" or "Designed and...".
+        5. NATURAL PHRASING: Do not forcibly alter the original verb or syntax if the original phrasing is already strong and natural. 
+           - For OTP verification: Keep it clean as "Implemented OTP verification" (or simple variations) instead of forcing "Designed and implemented".
+           - For LangGraph RAG pipelines: Prefer starting with "Implemented LangGraph RAG pipelines" or "Built and integrated LangGraph RAG pipelines" to improve rhythm and avoid repeating "Designed".
         6. NO FLUFF: Never explicitly inject generic soft skills (communication, time management, problem-solving, teamwork, collaboration, analytical skills). 
         7. STRICT DOMAIN BOUNDARIES: Do NOT inject JD targets verbatim (like 'consumer protection', 'fairness') into unrelated projects (like livestock platforms or object detection). Translate them into their native engineering equivalents (e.g., 'operational visibility', 'system reliability') or make NO CHANGE. Semantic leakage will be heavily penalized.
         
@@ -160,6 +174,7 @@ async function computeScoresNode(state: State) {
   const bulletIds: string[] = [];
 
   for (const [id, meta] of Object.entries(metadata)) {
+    if (!meta) continue;
     if (meta.final_decision === "pending") {
       bulletIds.push(id);
       allOriginals.push(meta.original);
@@ -175,22 +190,31 @@ async function computeScoresNode(state: State) {
       CohereService.getEmbeddings([jdTargetStr])
     ]);
 
-    const jdVector = jdEmbed[0];
+    const jdVector = jdEmbed ? jdEmbed[0] : undefined;
+    if (!origEmbeds || !optEmbeds || !jdVector) {
+      return { metadata };
+    }
 
     for (let i = 0; i < bulletIds.length; i++) {
       const id = bulletIds[i];
+      if (!id) continue;
       const meta = metadata[id];
+      if (!meta) continue;
       
+      const origVector = origEmbeds[i];
+      const optVector = optEmbeds[i];
+      if (!origVector || !optVector) continue;
+
       const optStr = meta.optimized.toLowerCase();
       const origStr = meta.original.toLowerCase();
 
       // 1. Semantic Preservation
-      const similarity = CohereService.cosineSimilarity(origEmbeds[i], optEmbeds[i]);
+      const similarity = CohereService.cosineSimilarity(origVector, optVector);
       meta.semantic_similarity_score = similarity;
 
       // 2. Semantic ATS Gain
-      const origToJD = CohereService.cosineSimilarity(origEmbeds[i], jdVector);
-      const optToJD = CohereService.cosineSimilarity(optEmbeds[i], jdVector);
+      const origToJD = CohereService.cosineSimilarity(origVector, jdVector);
+      const optToJD = CohereService.cosineSimilarity(optVector, jdVector);
       const rawGain = Math.max(0, optToJD - origToJD);
       meta.ats_gain_score = Math.min(rawGain * 5, 1.0); 
 
@@ -283,6 +307,7 @@ async function decisionNode(state: State) {
     for (const proj of projects) {
       for (const bullet of proj.bullets) {
         const meta = metadata[bullet.id];
+        if (!meta) continue;
         if (meta.final_decision !== "pending") continue;
 
         if (meta.original === meta.optimized) {
@@ -326,6 +351,7 @@ async function decisionNode(state: State) {
   // Observability
   if (allDone) {
     for (const meta of Object.values(metadata)) {
+      if (!meta) continue;
       if (meta.original !== meta.optimized || meta.retry_count > 0) {
          logger.info(`[Scoring] Bullet ${meta.bullet_id} -> ${meta.final_decision} (Conf: ${meta.optimization_confidence_score.toFixed(2)}, ATS: ${meta.ats_gain_score.toFixed(2)}, Concise: ${meta.conciseness_score.toFixed(2)})`);
       }

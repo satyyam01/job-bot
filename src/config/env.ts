@@ -15,6 +15,7 @@ const envSchema = z.object({
   FIRECRAWL_API_KEY: z.string(),
   COHERE_API_KEY: z.string().optional(),
   REDIS_URL: z.string().optional(),
+  TELEGRAM_WEBHOOK_URL: z.string().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

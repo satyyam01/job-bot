@@ -34,9 +34,13 @@ export class CohereService {
     let normA = 0;
     let normB = 0;
     for (let i = 0; i < vecA.length; i++) {
-      dotProduct += vecA[i] * vecB[i];
-      normA += vecA[i] * vecA[i];
-      normB += vecB[i] * vecB[i];
+      const a = vecA[i];
+      const b = vecB[i];
+      if (a !== undefined && b !== undefined) {
+        dotProduct += a * b;
+        normA += a * a;
+        normB += b * b;
+      }
     }
     if (normA === 0 || normB === 0) return 0;
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
