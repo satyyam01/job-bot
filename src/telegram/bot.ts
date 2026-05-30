@@ -40,24 +40,21 @@ bot.on('message', async (msg) => {
     return bot.sendMessage(chatId, `❌ Sorry, an error occurred while processing the job: ${result.error}`);
   }
 
-  // Send the tailored resume in chunks if it exceeds Telegram's 4096 char limit
-  const resumeText = String(result.tailoredResume);
-  const chunkSize = 4000;
-  const chunks = [];
-  for (let i = 0; i < resumeText.length; i += chunkSize) {
-    chunks.push(resumeText.substring(i, i + chunkSize));
-  }
-  
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
-    try {
-      const prefix = i === 0 ? '*Tailored Resume Summary (Plain Text):*\n\n' : '';
-      await bot.sendMessage(chatId, prefix + chunk, { parse_mode: 'Markdown' });
-    } catch (err: any) {
-      logger.warn('Markdown parsing failed for Telegram chunk, sending as raw text.');
-      const prefix = i === 0 ? 'Tailored Resume Summary (Plain Text):\n\n' : '';
-      await bot.sendMessage(chatId, prefix + chunk);
-    }
+  const atsMessage = `🎯 *ATS Score Estimate: ${result.atsScore}%*\n\n` +
+    `*How it is calculated:*\n` +
+    `• *Semantic Match (25%)*: Cosine similarity between resume vocabulary and job description requirements via Cohere embeddings.\n` +
+    `• *Authenticity Check (25%)*: Filters out recruiter buzzwords and generic corporate fluff.\n` +
+    `• *Domain Compatibility (20%)*: LLM-in-the-loop plausibility audits to prevent semantic contamination.\n` +
+    `• *Systems Tone Calibration (15%)*: Verifies active, systems-engineering action verbs.\n` +
+    `• *Conciseness (10%)*: Restricts word footprint expansion and verbal bloat.\n` +
+    `• *Keyword Alignment (5%)*: Tracks direct alignment gains for high-signal technical keywords.`;
+
+  try {
+    await bot.sendMessage(chatId, atsMessage, { parse_mode: 'Markdown' });
+  } catch (err: any) {
+    logger.warn('Markdown parsing failed for ATS message, sending as plain text.');
+    const plainAtsMessage = atsMessage.replace(/\*/g, '');
+    await bot.sendMessage(chatId, plainAtsMessage);
   }
 
   // Send the PDF and LaTeX documents as frictionless attachments
