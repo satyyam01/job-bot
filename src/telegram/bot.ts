@@ -1,5 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import fs from 'fs';
+import path from 'path';
 import { env } from '../config/env';
 import { logger } from '../logs/logger';
 import { JobProcessorService } from '../services/jobProcessor';
@@ -57,22 +58,37 @@ bot.on('message', async (msg) => {
     await bot.sendMessage(chatId, plainAtsMessage);
   }
 
-  // Send the PDF and LaTeX documents as frictionless attachments
-  if (result.pdfPath) {
-    try {
-      // 1. Send compiled PDF
-      if (fs.existsSync(result.pdfPath)) {
-        await bot.sendDocument(chatId, result.pdfPath);
-      }
-
-      // 2. Send LaTeX source file
-      const texPath = result.pdfPath.replace('.pdf', '.tex');
-      if (fs.existsSync(texPath)) {
-        await bot.sendDocument(chatId, texPath);
-      }
-    } catch (err: any) {
-      logger.error(`Failed to send PDF or LaTeX documents over Telegram: ${err.message}`);
+  // Save and send the tailored resume documents as attachments
+  try {
+    const logsDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
     }
+
+    const timestamp = Date.now();
+    const txtPath = path.join(logsDir, `tailored_resume_${timestamp}.txt`);
+    const texPath = path.join(logsDir, `tailored_resume_${timestamp}.tex`);
+
+    // 1. Always write and send the TXT file containing plain text resume
+    fs.writeFileSync(txtPath, result.tailoredResume || '', 'utf-8');
+    if (fs.existsSync(txtPath)) {
+      await bot.sendDocument(chatId, txtPath);
+    }
+
+    // 2. Always write and send the TEX file containing LaTeX source code
+    fs.writeFileSync(texPath, result.tailoredLatex || '', 'utf-8');
+    if (fs.existsSync(texPath)) {
+      await bot.sendDocument(chatId, texPath);
+    }
+
+    // 3. Send compiled PDF if available and compilation succeeded
+    if (result.pdfPath && fs.existsSync(result.pdfPath)) {
+      await bot.sendDocument(chatId, result.pdfPath);
+    } else {
+      logger.warn('[Telegram Bot] PDF path not found or compilation failed, skipping PDF attachment.');
+    }
+  } catch (err: any) {
+    logger.error(`Failed to send tailored resume documents over Telegram: ${err.message}`);
   }
 });
 
