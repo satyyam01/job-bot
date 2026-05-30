@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "./render-build.sh",
-    "start": "npx tsx src/app.ts"
+    "start": "npx tsx src/app.ts",
+    "postinstall": "chmod +x render-build.sh && ./render-build.sh"
   },
   "keywords": [],
   "author": "",
