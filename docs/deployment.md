@@ -35,6 +35,10 @@ The application validates the following variables at boot using Zod. Create a `.
   - `https://api.firecrawl.dev`
   - `https://api.groq.com`
   - `https://api.cohere.com`
+- **Compiler Toolchain Dependencies**: 
+  - To enable automatic PDF generation, the **Tectonic compiler CLI** must be installed on your host system (or bundled in your Docker image) and accessible in your shell environment path (`tectonic`). 
+  - On the first compilation run, Tectonic requires outbound internet access to download standard LaTeX styling packages from its package registry CDN. Subsequent runs will use locally cached assets.
+
 
 ---
 
@@ -106,5 +110,5 @@ module.exports = {
 
 Because LangGraph iteratively optimizes multiple resume bullets in a loop, the application generates a high volume of concurrent API calls. This can quickly exhaust standard Groq Tokens Per Minute (TPM) limits:
 
-1. **Inference pacing**: The `InferenceService` implements a `1.5-second` delay before retry execution to prevent triggering rate limit errors on high-frequency requests.
+1. **Inference pacing**: The `InferenceService` implements an automatic pacing delay. On typical connection failures, it waits `1.5 seconds` before retrying. However, if a **429 Rate Limit** or token limit is explicitly caught from the LLM provider, it dynamically scales the backoff delay to **3.0 seconds** to give the on-demand token bucket ample time to replenish.
 2. **Local fallback routing**: Configure `OLLAMA_MODEL` to run optimizations locally. This provides unlimited inference capacity, bypassing external cloud rate limits entirely during high-traffic periods.

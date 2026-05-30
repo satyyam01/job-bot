@@ -76,25 +76,27 @@ export class ResumeParser {
         skills.push(line);
       } else if (currentSection === 'experience') {
         if (line.trim().length > 0 && !line.trim().startsWith('•')) {
-          // New Experience Block
-          if (currentProject) experience.push(currentProject);
-          currentProject = { id: `exp_${expCounter++}`, titleAndTech: [line], bullets: [] };
+          if (currentProject && currentProject.bullets.length === 0) {
+            currentProject.titleAndTech.push(line);
+          } else {
+            if (currentProject) experience.push(currentProject);
+            currentProject = { id: `exp_${expCounter++}`, titleAndTech: [line], bullets: [] };
+          }
         } else if (line.trim().startsWith('•')) {
           if (!currentProject) currentProject = { id: `exp_${expCounter++}`, titleAndTech: [], bullets: [] };
           currentProject.bullets.push(this.createBullet(line, bulletCounter++));
-        } else if (currentProject && line.trim().length > 0) {
-           currentProject.titleAndTech.push(line);
         }
       } else if (currentSection === 'projects') {
         if (line.trim().length > 0 && !line.trim().startsWith('•')) {
-          // New Project Block
-          if (currentProject) projects.push(currentProject);
-          currentProject = { id: `proj_${projCounter++}`, titleAndTech: [line], bullets: [] };
+          if (currentProject && currentProject.bullets.length === 0) {
+            currentProject.titleAndTech.push(line);
+          } else {
+            if (currentProject) projects.push(currentProject);
+            currentProject = { id: `proj_${projCounter++}`, titleAndTech: [line], bullets: [] };
+          }
         } else if (line.trim().startsWith('•')) {
           if (!currentProject) currentProject = { id: `proj_${projCounter++}`, titleAndTech: [], bullets: [] };
           currentProject.bullets.push(this.createBullet(line, bulletCounter++));
-        } else if (currentProject && line.trim().length > 0) {
-           currentProject.titleAndTech.push(line);
         }
       }
     }

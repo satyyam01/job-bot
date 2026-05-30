@@ -23,7 +23,7 @@ export class JobProcessorService {
 
       // Step 3: Tailor Resume
       const tailoringEngine = new TailoringEngine();
-      const { tailoredResume, atsScore } = await tailoringEngine.tailorResume(structuredJd);
+      const { tailoredResume, tailoredLatex, pdfPath, atsScore } = await tailoringEngine.tailorResume(structuredJd);
       
       logger.info(`Successfully generated tailored resume with estimated ATS score: ${atsScore}`);
 
@@ -33,6 +33,8 @@ export class JobProcessorService {
         role: structuredJd.role_title || 'Unknown Role',
         atsScore,
         tailoredResume,
+        tailoredLatex,
+        pdfPath,
         structuredJd
       };
     } catch (error: any) {

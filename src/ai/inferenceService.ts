@@ -38,8 +38,15 @@ export class InferenceService {
       } catch (error: any) {
         logger.error(`[Inference] generateText attempt ${attempt} failed: ${error.message}`);
         if (attempt === maxRetries) throw error;
-        // Wait 1.5s before retrying to respect TPM limits
-        await new Promise(r => setTimeout(r, 1500));
+        
+        // Detect 429 rate limits and scale backoff pacing to 3s to let token bucket replenish
+        const isRateLimit = error.message.includes('429') || 
+                            error.message.toLowerCase().includes('rate limit') || 
+                            error.status === 429;
+        const waitTime = isRateLimit ? 3000 : 1500;
+        
+        logger.info(`[Inference] Pacing execution delay for ${waitTime}ms before retry.`);
+        await new Promise(r => setTimeout(r, waitTime));
       }
     }
     return '';
@@ -92,8 +99,15 @@ export class InferenceService {
       } catch (error: any) {
         logger.error(`[Inference] generateStructuredData attempt ${attempt} failed: ${error.message}`);
         if (attempt === maxRetries) throw error;
-        // Wait 1.5s before retrying to respect TPM limits
-        await new Promise(r => setTimeout(r, 1500));
+        
+        // Detect 429 rate limits and scale backoff pacing to 3s to let token bucket replenish
+        const isRateLimit = error.message.includes('429') || 
+                            error.message.toLowerCase().includes('rate limit') || 
+                            error.status === 429;
+        const waitTime = isRateLimit ? 3000 : 1500;
+        
+        logger.info(`[Inference] Pacing execution delay for ${waitTime}ms before retry.`);
+        await new Promise(r => setTimeout(r, waitTime));
       }
     }
     return {};

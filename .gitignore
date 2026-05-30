@@ -74,12 +74,11 @@ ehthumbs.db
 # Firecrawl / custom generated files
 firecrawl/*.json
 
-# Generated resume outputs
-src/resume/*.json
-src/resume/*.md
+# Statically downloaded compiler binaries
+bin/
+
+# Qodo IDE directory
+.qodo/
 
 # Ignore Git metadata for submodules if any
 .gitmodules
-
-# Ignore package lock if you prefer yarn or pnpm (optional)
-# package-lock.json

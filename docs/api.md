@@ -55,6 +55,8 @@ Scrapes a job description from a URL, extracts requirements, tailors the resume,
   "role": "Target Role Title",
   "atsScore": 92,
   "tailoredResume": "Experience\n\nAccenture...\n\nProjects\n\nFarmTrack...\n\nTechnical Skills\n\nLanguages...",
+  "tailoredLatex": "\\documentclass[letterpaper,11pt]{article} ... \\begin{document} ... \\end{document}",
+  "pdfPath": "c:\\SatyamsFolder\\projects\\MERN\\job-bot\\logs\\tailored_resume_1716712345678.pdf",
   "structuredJd": {
     "company": "Target Company Name",
     "role_title": "Target Role Title",

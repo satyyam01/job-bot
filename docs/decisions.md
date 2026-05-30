@@ -80,3 +80,32 @@ We selected **Telegram** as the primary client interface:
 ### Consequences
 - **Pros**: Fast development cycle, instant multi-device compatibility, and zero frontend layout maintenance overhead.
 - **Cons**: Limited to Telegram's UI capabilities and a 4096-character message limit, requiring the bot to split and send tailored resumes in chunks.
+
+---
+
+## ADR-004: Decoupling LLM Text Optimization from Document Formats via a Postcursor LaTeX Mapping Engine
+
+### Status
+**Approved**
+
+### Context
+When tailoring resumes for engineering positions, candidates require LaTeX-formatted files. Having the LLM output raw LaTeX directly within its optimization loop introducing several issues:
+1. **Compilation Crash Rates**: LLMs frequently fail to escape standard LaTeX characters (such as `%`, `&`, or `_`) or mismatch grouping braces `{}` in their output, causing compiler errors.
+2. **Token Inflations**: Processing LaTeX syntax characters within the recursive LangGraph loops significantly inflates token footprints and execution costs.
+3. **Template Drift**: The LLM might inadvertently modify, simplify, or degrade the professional layout definitions, styling packages, margins, and structural formatting of the template.
+
+### Decision
+We chose to **completely decouple the LLM text optimization phase from the target document format**:
+- The LangGraph AI loop operates exclusively on **plain standard text/markdown** inputs, maximizing keyword focusing, tone checking, and semantic evaluating without syntax distractions.
+- We implemented a **Postcursor Mapping Engine** (`LatexGeneratorService`) that runs on the finalized optimized state:
+  - Dynamically cleans and escapes raw text arrays into safe LaTeX inputs.
+  - Automatically splits role lines into title, location, and date properties using regex filters (`dateRegex`, `locRegex`).
+  - Injects the compiled LaTeX blocks into corresponding placeholder targets (`%%EXPERIENCE_SECTION%%`, `%%PROJECTS_SECTION%%`, `%%SKILLS_SECTION%%`) inside a static master style file (`resumeTemplate.tex`).
+  - Spawns Tectonic shell subprocess compiles to deliver PDF attachments directly to the Telegram bot with a graceful standard markdown text fallback.
+
+### Consequences
+- **Pros**:
+  - **0% Compiler Crash Rates**: Eliminates any possibility of LLM syntax errors breaking LaTeX compilation.
+  - **Absolute Layout Safety**: Keeps styling margins, fonts, and static categories (Education, Credentials) completely unalterable and pristine.
+  - **Extremely Low Token Footprints**: Restricts AI workloads purely to raw textual assets.
+- **Cons**: Requires keeping the static LaTeX template placeholders synchronized with the schema format definitions inside `latexGenerator.ts`.

@@ -27,10 +27,12 @@ src/
 ├── prompts/
 │   └── jdPrompts.ts           # System-level prompts for JD parsing and resume tailoring
 ├── resume/
+│   ├── latexGenerator.ts      # LaTeX escaping, token regex splitting, and Tectonic compiles
 │   ├── masterResume.json      # Structured candidate profile reference
 │   ├── masterResume.md        # Plain text source resume containing formatting targets
 │   ├── resumeParser.ts        # Modular blocks separator extracting bullets
 │   ├── resumeRenderer.ts      # Structured sections markdown compiler
+│   ├── resumeTemplate.tex     # Master LaTeX styling and margins template
 │   ├── tailoringEngine.ts     # Main orchestrator initiating the LangGraph instance
 │   └── tailoringGraph.ts      # Core LangGraph pipeline, nodes, evaluation thresholds
 ├── routes/
@@ -66,6 +68,7 @@ graph TD
         TailoringEngine[TailoringEngine]
         Parser[ResumeParser]
         Renderer[ResumeRenderer]
+        LatexGen[LatexGeneratorService]
     end
 
     subgraph Intelligence & AI Layer
@@ -90,6 +93,8 @@ graph TD
     LangGraph --> Inference
     LangGraph --> Cohere
     TailoringEngine --> Renderer
+    TailoringEngine --> LatexGen
+    LatexGen -->|Compiles via CLI| Tectonic[Tectonic Subprocess]
 ```
 
 ### Layer Rules & Isolation:
@@ -121,7 +126,10 @@ classDiagram
         Imports FirecrawlService, InferenceService, TailoringEngine, jdExtractionPrompt, logger
     }
     class resume_tailoringEngine_ts {
-        Imports fs, path, logger, ResumeParser, TailoringGraph, ResumeRenderer
+        Imports fs, path, logger, ResumeParser, TailoringGraph, ResumeRenderer, LatexGeneratorService
+    }
+    class resume_latexGenerator_ts {
+        Imports fs, path, child_process.exec, logger
     }
     class resume_tailoringGraph_ts {
         Imports langchain/langgraph, ResumeParser, InferenceService, CohereService, logger
@@ -133,6 +141,7 @@ classDiagram
     controllers_apiController_ts --> services_jobProcessor_ts
     services_jobProcessor_ts --> resume_tailoringEngine_ts
     resume_tailoringEngine_ts --> resume_tailoringGraph_ts
+    resume_tailoringEngine_ts --> resume_latexGenerator_ts
 ```
 
 ---
@@ -149,3 +158,5 @@ Below are the input and output signatures of the critical boundary components of
 | **`ResumeParser`** | `TailoringEngine` | `markdown: string` (Raw Master Resume text) | `{ header: string[], experience: ParsedProject[], projects: ParsedProject[], skills: string[], footer: string[] }` |
 | **`TailoringGraph`** | `TailoringEngine` | `initialState: State` (Contains parsed resume, raw job description JSON, initial metadata state) | `Promise<State>` (Contains optimized lists and scoring matrices) |
 | **`ResumeRenderer`** | `TailoringEngine` | `experience: ParsedProject[]`, `projects: ParsedProject[]`, `skills: string[]` | `string` (A beautifully combined Markdown resume containing ONLY whitelisted sections) |
+| **`LatexGeneratorService`** | `TailoringEngine` | `experience: ParsedProject[]`, `projects: ParsedProject[]`, `skills: string[]` | `string` (Escape-sanitized compile-ready LaTeX code) |
+| **`LatexGeneratorService` (Compile)** | `TailoringEngine` | `latexCode: string`, `outputPath: string` | `Promise<string>` (Path to the successfully compiled `.pdf` resume file) |

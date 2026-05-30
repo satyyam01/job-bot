@@ -126,3 +126,36 @@ graph TD
    - Loops through the resume text, carving out chunks of `4000` characters to stay safely under Telegram's limits.
    - Attempts to send each chunk with **Markdown parsing enabled** to highlight technical words and structure.
    - If a chunk fails Markdown parsing (due to unclosed ticks or asterisks injected by the LLM), the bot catches the error, logs a warning, and falls back to sending the chunk as **plain text** to guarantee delivery.
+
+---
+
+## 5. LaTeX Mapping & Tectonic PDF Compilation Flow
+
+This flow maps optimized textual data back into a predefined LaTeX template and compiles it into a printable PDF.
+
+```mermaid
+graph TD
+    A[Final Optimized State] --> B[LatexGeneratorService]
+    C[resumeTemplate.tex] --> B
+    B -->|1. Escape special chars & bold markup| D[LaTeX Sanitizer]
+    D -->|2. Split & Regex parsing for title/location/date| E[Block Builder]
+    E -->|3. Replace %%PLACEHOLDERS%% in template| F[Save temporary .tex file]
+    F -->|4. Execute: tectonic -o outdir filepath| G[Tectonic CLI Compiler]
+    G -->|Success| H[Compiled resume.pdf]
+    G -->|Failure / missing binary| I[Graceful catch-all fallback]
+    H --> J[Telegram bot sends PDF & LaTeX file attachments]
+    I --> K[Telegram bot fallback: Sends Markdown text summary]
+```
+
+### Steps:
+1. **Initiate Generation**: Appended immediately after the LangGraph `__end__` state terminates.
+2. **LaTeX Escaping & Sanitization**: To prevent compiler failures caused by raw markdown symbols, the postcursor executes a replacement regex mapping standard characters into LaTeX control codes (e.g. `&` $\to$ `\&`, `%` $\to$ `\%`, `**bold**` $\to$ `\textbf{bold}`).
+3. **Regex Structural Parsing**:
+   - Spices the experience heading lines (`Accenture Dec. 2025 – May. 2026`) using a date detection regex (`dateRegex`) to separate the company entity name from date ranges, and title lists (`Intern Bangalore, KA`) using a location regex (`locRegex`) to split roles from cities and states.
+   - Formats them into standard `\resumeSubheading{Company}{Date}{Title}{Location}` macros.
+   - Maps project lines into `\resumeProjectHeading` configurations.
+   - Splits and bolds technical skills categories before mounting.
+4. **Placeholder Substitution**: Substitutes placeholder keys (`%%EXPERIENCE_SECTION%%`, `%%PROJECTS_SECTION%%`, `%%SKILLS_SECTION%%`) inside the hardcoded `resumeTemplate.tex` assets file.
+5. **CLI Shell Compiler Spawner**: Executes Tectonic CLI compilation commands (`tectonic -o [outdir] [texFilePath]`) via a Node child subprocess. Tectonic automatically downloads necessary styling packages on-demand, outputs a compiled `.pdf` file in milliseconds, and caches packages.
+6. **Graceful Delivery Fallback**: If compiler execution errors are caught, the system logs a warning, falls back, and proceeds to deliver standard text summary chunks to Telegram, ensuring zero service interruptions.
+

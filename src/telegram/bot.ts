@@ -1,4 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
+import fs from 'fs';
 import { env } from '../config/env';
 import { logger } from '../logs/logger';
 import { JobProcessorService } from '../services/jobProcessor';
@@ -39,10 +40,6 @@ bot.on('message', async (msg) => {
     return bot.sendMessage(chatId, `❌ Sorry, an error occurred while processing the job: ${result.error}`);
   }
 
-  // Send the results back
-  const summaryMessage = `✅ *Job Processed:* ${result.role} at ${result.company}\n🎯 *ATS Score Estimate:* ${result.atsScore}%`;
-  await bot.sendMessage(chatId, summaryMessage, { parse_mode: 'Markdown' });
-
   // Send the tailored resume in chunks if it exceeds Telegram's 4096 char limit
   const resumeText = String(result.tailoredResume);
   const chunkSize = 4000;
@@ -54,12 +51,30 @@ bot.on('message', async (msg) => {
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
     try {
-      const prefix = i === 0 ? '*Tailored Resume:*\n\n' : '';
+      const prefix = i === 0 ? '*Tailored Resume Summary (Plain Text):*\n\n' : '';
       await bot.sendMessage(chatId, prefix + chunk, { parse_mode: 'Markdown' });
     } catch (err: any) {
       logger.warn('Markdown parsing failed for Telegram chunk, sending as raw text.');
-      const prefix = i === 0 ? 'Tailored Resume:\n\n' : '';
+      const prefix = i === 0 ? 'Tailored Resume Summary (Plain Text):\n\n' : '';
       await bot.sendMessage(chatId, prefix + chunk);
+    }
+  }
+
+  // Send the PDF and LaTeX documents as frictionless attachments
+  if (result.pdfPath) {
+    try {
+      // 1. Send compiled PDF
+      if (fs.existsSync(result.pdfPath)) {
+        await bot.sendDocument(chatId, result.pdfPath);
+      }
+
+      // 2. Send LaTeX source file
+      const texPath = result.pdfPath.replace('.pdf', '.tex');
+      if (fs.existsSync(texPath)) {
+        await bot.sendDocument(chatId, texPath);
+      }
+    } catch (err: any) {
+      logger.error(`Failed to send PDF or LaTeX documents over Telegram: ${err.message}`);
     }
   }
 });

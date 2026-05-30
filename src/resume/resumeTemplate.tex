@@ -1,0 +1,270 @@
+%-------------------------
+% Resume in Latex
+% Author : Jake Gutierrez
+% Based off of: https://github.com/sb2nov/resume
+% License : MIT
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+% \input{glyphtounicode}
+
+
+%----------FONT OPTIONS----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+% \pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[3]{ % Added argument for tech stack
+    \item
+    \begin{tabular*}{1.001\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & \textbf{\small #2}\\
+    \end{tabular*}
+    \vspace{2pt} % Adds space between title and tech stack
+    {\textit{\small\color{Gray}#3}} % Tech stack styled separately
+    \vspace{5pt} % Adjust spacing below
+}
+
+% New command for achievements with certificate link
+\newcommand{\resumeAchievementHeading}[3]{
+    \item
+    \begin{tabular*}{1.001\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & \textbf{\small #2}\\
+    \end{tabular*}
+    \vspace{2pt}
+    {\textit{\small\color{Gray}#3}}
+    \vspace{5pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    \textbf{\Huge \scshape Satyam Nautiyal} \\ \vspace{3pt}
+    \small +91 9660966724 $|$ \href{mailto:nautiyalsatyam01@gmail.com}{\underline{nautiyalsatyam01@gmail.com}} $|$ 
+    \href{https://www.linkedin.com/in/satyam-nautiyal-378770254/}{\underline{LinkedIn}} $|$
+    \href{https://github.com/satyyam01}{\underline{GitHub}} $|$
+    \href{https://satyyam.site}{\underline{Portfolio}}
+\end{center}
+
+\vspace{-17pt}
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Manipal University Jaipur}{CGPA - 7.72 ; Jaipur, RJ}
+      {B.Tech in Computer Science \& Engineering (IoT \& Information Security)}{Sept. 2022 -- May 2026}
+
+      \vspace{-3pt}
+      
+      \resumeItemListStart
+      \resumeItem{\textbf{Relevant Coursework:} Operating Systems, Computer Networks, Object-Oriented Programming, Database Management Systems, Data Structures \& Algorithms}
+      \resumeItemListEnd
+
+      \vspace{-3pt}
+    
+    \resumeSubheading
+      {Brightlands School}{Dehradun, UK}
+      {Higher Secondary Education}{2019 -- 2022}
+  \resumeSubHeadingListEnd
+
+\vspace{-9pt}
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+  \resumeSubHeadingListStart
+
+    \resumeSubheading
+      {Accenture}{Dec. 2025 -- May. 2026}
+      {Intern}{Bangalore, KA}
+      \resumeItemListStart
+%%ACCENTURE_BULLETS%%
+      \resumeItemListEnd
+      
+\vspace{1pt}
+    \resumeSubheading
+      {DRDO, Ministry of Defence}{June 2024 -- Aug. 2024}
+      {Intern}{Dehradun, UK}
+      \resumeItemListStart
+%%DRDO_BULLETS%%
+    \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+\vspace{-13pt}
+
+%-----------PROJECTS-----------
+\section{Projects}
+
+\vspace{-7pt}
+
+    \resumeSubHeadingListStart
+      \resumeProjectHeading{\textbf{FarmTrack - Intelligent Livestock Management System}}{\href{https://github.com/satyyam01/FarmTrack}{\underline{Source Code}}}{Node.js, Express.js, MongoDB, Redis, Nodemailer ( SMTP ), Razorpay}
+
+\vspace{-15pt}
+
+\resumeItemListStart
+%%FARMTRACK_BULLETS%%
+\resumeItemListEnd
+
+\vspace{-18pt}
+
+    \resumeProjectHeading{\textbf{FinSage - Explainable AI Loan Approval Platform}}{\href{https://github.com/satyyam01/finsage}{\underline{Source Code}}}{Python, Flask, LangGraph, LightGBM, SHAP, PostgreSQL, Streamlit}
+
+\vspace{-15pt}
+
+\resumeItemListStart
+%%FINSAGE_BULLETS%%
+\resumeItemListEnd
+
+\vspace{-18pt}
+
+    \resumeProjectHeading{\textbf{Lumora - AI Companion for Journaling \& Reflection}}{\href{https://github.com/satyyam01/lumora}{\underline{Source Code}}}{Node.js, Express.js, MongoDB, LangGraph, Cohere, Pinecone, React}
+
+\vspace{-15pt}
+
+\resumeItemListStart
+%%LUMORA_BULLETS%%
+\resumeItemListEnd
+          
+    \resumeSubHeadingListEnd
+
+\vspace{-15pt}
+
+
+%
+%-----------PROGRAMMING SKILLS-----------
+\section{Technical Skills}
+\vspace{-1pt}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Languages:} %%LANGUAGES_SKILLS%% \\
+     \vspace{1pt}
+     \textbf{Frameworks \& Libraries:} %%FRAMEWORKS_SKILLS%% \\
+     \vspace{1pt}
+     \textbf{Databases:} %%DATABASES_SKILLS%% \\
+     \vspace{1pt}
+     \textbf{DevOps:} %%DEVOPS_SKILLS%% \\
+     \vspace{1pt}
+     \textbf{AI/ML \& Tools:} %%AI_SKILLS%%
+    }}
+ \end{itemize}
+
+\vspace{-15pt}
+
+%-------------------------------------------
+
+\section{Achievements, Certifications \& Leadership}
+
+\vspace{-6pt}
+\resumeSubHeadingListStart
+
+\resumeAchievementHeading{\textbf{Outstanding Intern} - IRDE-DRDO, with Letter of Recommendation.}{}{}{}
+
+\vspace{-41pt}
+
+\resumeAchievementHeading{\textbf{2x Patent Holder} - Face Recognition-based Attendance System \& Automation System for Medical Report Analysis.}{}{}{}
+
+\vspace{-41pt}
+
+\resumeAchievementHeading{\textbf{Dean's List Award} - Achieved Highest GPA - Grade Point Average (6th Semester - 9.41).}{}{}{}
+
+\vspace{-41pt}
+
+\resumeAchievementHeading{\textbf{Best Innovator Award} - Institution's Innovation Council ( Ministry of HRD ).}{}{}{}
+
+\vspace{-41pt}
+
+\resumeAchievementHeading{\textbf{Oracle Certified} - OCI Generative AI Professional (\textbf{1Z0-1127-24})}{\href{https://www.linkedin.com/in/satyam-nautiyal-378770254/details/certifications/}{\underline{Certificate}}}{}
+
+\vspace{-41pt}
+
+\resumeAchievementHeading{\textbf{Managing Director, INDGenius MUJ} - Led cross-functional tech and outreach initiatives, engaging 2500+ students.}{}{}{}
+
+\resumeSubHeadingListEnd
+
+%-------------------------------------------
+
+\end{document}

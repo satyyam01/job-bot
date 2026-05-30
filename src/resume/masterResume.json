@@ -1,0 +1,95 @@
+{
+  "basics": {
+    "name": "Satyam Nautiyal",
+    "email": "nautiyalsatyam01@gmail.com",
+    "phone": "+91 9660966724",
+    "portfolio": "satyyam.site"
+  },
+  "education": [
+    {
+      "institution": "Manipal University Jaipur",
+      "degree": "B.Tech in Computer Science & Engineering (IoT & Information Security)",
+      "date": "Sept. 2022 – May 2026",
+      "details": "CGPA - 7.72. Relevant Coursework: Operating Systems, Computer Networks, Object-Oriented Programming, Database Management Systems, Data Structures & Algorithms"
+    },
+    {
+      "institution": "Brightlands School Dehradun, UK",
+      "degree": "Higher Secondary Education",
+      "date": "2019 – 2022"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Accenture",
+      "title": "Intern",
+      "location": "Bangalore, KA",
+      "date": "Dec. 2025 – May. 2026",
+      "bullets": [
+        "Architected multi-agent AI enrollment platform automating 15+ complex healthcare workflows.",
+        "Built scalable async enrollment pipelines with fault-tolerant processing and policy-driven automation.",
+        "Developed real-time SSE observability for AI reasoning, auditability, and decision traceability."
+      ]
+    },
+    {
+      "company": "DRDO, Ministry of Defence",
+      "title": "Intern",
+      "location": "Dehradun, UK",
+      "date": "June 2024 – Aug. 2024",
+      "bullets": [
+        "Led a 4-member team building real-time object detection models, improving detection accuracy by 25%.",
+        "Designed edge analytics systems using Arduino, ESP8266, and PyFirmata for low-latency processing.",
+        "Conducted field testing and optimization cycles, reducing false positives by 85%."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "farmtrack",
+      "name": "FarmTrack - Intelligent Livestock Management System",
+      "technologies": ["Node.js", "Express.js", "MongoDB", "Redis", "Nodemailer", "Razorpay"],
+      "tags": ["backend", "fullstack", "AI", "scaling", "auth", "analytics"],
+      "bullets": [
+        "Built a multi-farm analytics platform with RFID tracking and real-time operational insights.",
+        "Implemented JWT authentication, role-based access, and automated alerting workflows.",
+        "Improved system responsiveness by 40% using Redis caching and modular backend design."
+      ]
+    },
+    {
+      "id": "finsage",
+      "name": "FinSage - Explainable AI Loan Approval Platform",
+      "technologies": ["Python", "Flask", "LangGraph", "LightGBM", "SHAP", "PostgreSQL", "Streamlit"],
+      "tags": ["AI", "machine learning", "finance", "backend", "analytics"],
+      "bullets": [
+        "Developed LightGBM risk models on 32K+ records with SHAP-based explainability (93% accuracy).",
+        "Built a contextual financial analytics assistant using Llama3 and LangGraph.",
+        "Secured analytical workflows using bcrypt authentication, JWT sessions, and SQL-based controls."
+      ]
+    },
+    {
+      "id": "lumora",
+      "name": "Lumora - AI Companion for Journaling & Reflection",
+      "technologies": ["Node.js", "Express.js", "MongoDB", "LangGraph", "Cohere", "Pinecone", "React"],
+      "tags": ["AI", "RAG", "backend", "fullstack"],
+      "bullets": [
+        "Designed an AI journaling assistant with emotion tracking and contextual memory retrieval.",
+        "Built LangGraph RAG pipelines using Cohere and Pinecone for sub-3s analytical responses.",
+        "Implemented OTP verification and engagement reminders to improve user retention."
+      ]
+    }
+  ],
+  "skills": {
+    "languages": ["JavaScript", "C++"],
+    "frameworks_and_libraries": ["Node.js", "Express.js", "Streamlit"],
+    "databases": ["MongoDB", "PostgreSQL", "Pinecone"],
+    "devops": ["Git", "CI/CD", "Agile", "Microservices", "AWS", "Docker"],
+    "ai_ml_tools": ["Generative AI", "LangChain", "LangGraph", "RAG", "REST APIs", "Postman", "Github"]
+  },
+  "achievements": [
+    "Outstanding Intern - IRDE-DRDO, with Letter of Recommendation.",
+    "2x Patent Holder - Face Recognition-based Attendance System & Automation System for Medical Report Analysis.",
+    "Dean’s List Award - Achieved Highest GPA - Grade Point Average (6th Semester - 9.41).",
+    "Best Innovator Award - Institution’s Innovation Council ( Ministry of HRD ).",
+    "Oracle Certified - OCI Generative AI Professional (1Z0-1127-24) Certificate",
+    "Managing Director, INDGenius MUJ - Led cross-functional tech and outreach initiatives, engaging 2500+ students."
+  ]
+}

@@ -33,6 +33,7 @@ The system is constructed with a modern, high-performance Node.js and TypeScript
 | **Input Validation** | Zod | `v4.4.3` | Enforces runtime strict typing of system environment configurations and LLM outputs. |
 | **Logging & Monitoring** | Winston | `v3.19.0` | Structured logging to files (`logs/error.log`, `logs/combined.log`) and standard output. |
 | **Security Suite** | Helmet / CORS / Express-Rate-Limit | `Helmet v8.2` / `Rate-Limit v8.5` | Hardens REST endpoints against brute force, cross-origin scripting, and API pollution. |
+| **PDF Compilation** | Tectonic CLI | *Latest stable* | Rust-based on-demand LaTeX compiler CLI, used to compile beautiful PDFs statically with zero packaging overhead. |
 
 ---
 
@@ -42,6 +43,7 @@ The system operates across three separate boundaries:
 1. **Client Interface**: The Telegram Bot API and standard REST endpoints capture job URLs and dispatch asynchronous processing.
 2. **Ingestion Pipeline**: Firecrawl crawls and converts the target web resource into raw markdown, which is then parsed by the LLM into a highly structured JSON representation.
 3. **LangGraph Optimization Loop**: Executes state transitions that iteratively adapt, evaluate, score, and finalize optimized resume points.
+4. **Postcursor Compilers**: Translates standard text arrays into an escaped LaTeX layout, injects them into pre-defined style files, and compiles print-ready PDFs.
 
 ```mermaid
 graph TD
@@ -84,12 +86,20 @@ graph TD
     score -->|Embeddings & Rerank| Cohere[CohereService]
     score -->|Plausibility LLM| Inference
 
-    %% Render & Dispatch
-    Done -->|Optimized Experience & Projects| ResumeRenderer[ResumeRenderer]
-    ResumeRenderer -->|Tailored Markdown Resume| TailoringEngine
-    TailoringEngine -->|ATS Score & Markdown text| JobProcessor
-    JobProcessor -->|Sends in Chunks <4000 chars| TelegramBot
-    TelegramBot -->|Delivers to Chat| User
+    %% Render & Dynamic Compiles
+    Done -->|Optimized State| ResumeRenderer[ResumeRenderer]
+    ResumeRenderer -->|Tailored Markdown text| TailoringEngine
+    
+    Done -->|LaTeX Postcursor Mapping| LatexGen[LatexGeneratorService]
+    Template[resumeTemplate.tex] --> LatexGen
+    LatexGen -->|Compiles to PDF| Tectonic[Tectonic Subprocess]
+    Tectonic -->|tailored_resume.pdf & .tex| TailoringEngine
+
+    TailoringEngine -->|JSON: markdown, latex, pdfPath, score| JobProcessor
+    JobProcessor -->|Dispatches Documents| TelegramBot
+    TelegramBot -->|1. Sends Markdown text chunks| User
+    TelegramBot -->|2. Sends tailored_resume.pdf| User
+    TelegramBot -->|3. Sends dynamic .tex file| User
 ```
 
 ---
@@ -99,3 +109,5 @@ graph TD
 - **Stateless Execution**: The application holds no persistent database connections (MongoDB or PostgreSQL). Master resumes are read from the filesystem (`masterResume.md`), and state transitions happen entirely in-memory using LangGraph state annotations during a single execution block.
 - **Resource Constraints**: Leverages a 1.5-second pacing delay inside the LLM retry mechanism to strictly respect Groq TPM (Tokens Per Minute) and RPM (Requests Per Minute) boundaries.
 - **Client Integration**: The bot initializes in standard polling mode under development and seamlessly scales to Webhook routing (`/api/telegram/webhook`) behind reverse proxies in staging and production.
+- **Zero-Friction Deliverables**: Renders plain-text resume summaries directly in the chat interface while attaching ready-to-print, compiled `.pdf` documents and editable `.tex` code files, eliminating formatting transitions for candidates.
+

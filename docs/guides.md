@@ -129,3 +129,43 @@ To add a new node to the optimization graph:
    ```typescript
    .addEdge('myCustomNode', 'bulletOptimizerNode')
    ```
+
+### C. Customizing the LaTeX Template
+To adjust the styling, margins, fonts, or structural metadata (such as contact information or static education details) of the PDF:
+- Edit the source LaTeX file: `src/resume/resumeTemplate.tex`.
+- Keep the dynamic placeholders (`%%EXPERIENCE_SECTION%%`, `%%PROJECTS_SECTION%%`, and `%%SKILLS_SECTION%%`) in their correct list locations to ensure that the mapping engine compiles them successfully.
+
+---
+
+## 6. PDF Compiler Toolchain (Tectonic) Setup
+
+To allow the bot to compile PDFs automatically, you need to install the Tectonic compiler CLI on your host machine or deployment container.
+
+### A. Local Installation Options
+
+#### On macOS (using Homebrew):
+```bash
+brew install tectonic
+```
+
+#### On Windows (using winget or scoop):
+```powershell
+winget install tectonic
+# or using scoop
+scoop install tectonic
+```
+
+#### On Linux (Ubuntu/Debian):
+```bash
+sudo apt-get update
+sudo apt-get install tectonic
+```
+
+### B. Verification
+To verify that the Tectonic compiler is correctly installed and accessible in your shell, run:
+```bash
+tectonic --version
+```
+
+Once Tectonic is verified, the server-side compiler spawner will automatically locate the binary, fetch required packages on-the-fly, and deliver PDF files alongside raw plain-text summaries in chat.
+

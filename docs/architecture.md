@@ -95,10 +95,19 @@ sequenceDiagram
     Graph-->>Proc: Finalized State (experience, projects, skills)
     deactivate Graph
 
-    %% Rendering Stage
+    %% Rendering & Compiling Stage
     Proc->>Render: render(experience, projects, skills)
     Render-->>Proc: Formatted Markdown text
-    Proc-->>Bot: Returns { success, role, company, atsScore, tailoredResume }
+    
+    rect rgb(255, 245, 240)
+        Note over Proc: LaTeX Template Integration Phase
+        Proc->>Proc: LatexGeneratorService.generateTex(exp, proj, skills)
+        Note over Proc: Injects escaped bullets into resumeTemplate.tex
+        Proc->>Proc: LatexGeneratorService.compileToPdf(latexCode, outputPath)
+        Note over Proc: Spawns Tectonic shell subprocess to compile PDF
+    end
+    
+    Proc-->>Bot: Returns { success, role, company, atsScore, tailoredResume, tailoredLatex, pdfPath }
     
     %% Chunking & Delivery
     Note over Bot: Splits tailoredResume into <= 4000 char chunks
@@ -106,18 +115,35 @@ sequenceDiagram
     loop For each text chunk
         Bot->>User: Sends Resume markdown chunk
     end
+    
+    rect rgb(240, 255, 240)
+        Note over Bot: File Attachment Delivery Phase
+        Bot->>User: Sends tailored_resume.pdf (sendDocument)
+        Bot->>User: Sends tailored_resume.tex (sendDocument)
+    end
 ```
 
 ---
 
 ## 3. Rendering Pipeline & Spacing Architecture
 
-The **`ResumeRenderer`** acts as a compiler translating structured parsed nodes back into a unified plain-text markdown file:
+The system supports two parallel compile pipelines to output both plain-text summary and highly styled PDF templates:
+
+### A. Markdown Compilation (`ResumeRenderer`)
+Acts as a standard compiler translating structured parsed nodes back into a unified plain-text markdown file:
 - **Strict Whitelisting**: Only the whitelisted sections (`Experience`, `Projects`, `Technical Skills`) are output. Sections like contact info, objectives, education, and achievements are stripped from the final tailoring, optimizing keyword real estate for ATS evaluations.
 - **Normalization**:
   - Unescapes literal `\n` and `\\n` inputs returned from the LLM JSON objects.
   - Ensures every bullet point is strictly prefix-normalized with `• ` (bullet plus single space), fixing occurrences of direct strings like `•Bullet Text` or missing bullet indicators.
   - Generates clear, single empty line margins between experience and project items to maintain standardized layout rules.
+
+### B. LaTeX Template Injections (`LatexGeneratorService`)
+Translates plain text state dynamically into styled TeX files using a static layout template file (`resumeTemplate.tex`):
+- **Special Character Escaping**: Implements automated escaping to replace characters like `&` $\to$ `\&` and `%` $\to$ `\%` that would otherwise break compiler execution.
+- **Header Parsing Regexes**: Extracts entity names, roles, date ranges, and locations from raw input strings using `dateRegex` and `locRegex` filters before mounting them into custom macros (`\resumeSubheading`, `\resumeProjectHeading`).
+- **Placeholder Substitution**: Replaces the dynamic tags `%%EXPERIENCE_SECTION%%`, `%%PROJECTS_SECTION%%`, and `%%SKILLS_SECTION%%` directly inside the unalterable styling page, ensuring zero layout mutations.
+- **Shell Spawners**: Executes lightweight Tectonic shell compiles, caching packaging dependencies dynamically in temporary directories.
+
 
 ---
 
